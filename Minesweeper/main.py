@@ -2,27 +2,41 @@ from random import *
 from graphics import *
 
 def main():
-    win = GraphWin("Minesweeper", 160, 210)
+    win = GraphWin("Minesweeper", 500, 500) #default: 160, 210
     
     #Variables
     matrix = []
-    h = 9      #!
-    w = 9      #!   Needs Level Set
-    bombs = 9  #!
+    h = 30     #!
+    w = 30      #!   Needs Level Set
+    bombs = 300  #!
+    numObjs = []
         
     #Methods
     initBoard(matrix, w, h)
     addBombs(matrix, bombs, w, h)
     addNumbers(matrix, w, h)
     
-    drawBoardNumbers(win, matrix, w, h)
+    drawBoardNumbers(win, matrix, w, h, numObjs)
         
         
 
 ##  All methods below this  ##
 
-def drawBoardNumbers(win, matrix, w, h):
+def drawBoardNumbers(win, matrix, w, h, numObjs):
+    for i in range(len(matrix)):
+        for j in range(len(matrix[i])):
+            drawNumbers(win, matrix[i][j], i, j, numObjs)
+            
+def drawNumbers(win, num, i, j, numObjs):
+    if num != " ":
+        numObjs.append(drawNumber(win, num, i, j))
+
+def drawNumber(win, num, i, j):
+    pic = "../Resources/" + num + ".png"
+    picture = Image(Point(i*16+8, j*16+8), pic)
+    picture.draw(win)
     
+    return picture
 
 def initBoard(matrix, w, h):
     for i in range(h):
