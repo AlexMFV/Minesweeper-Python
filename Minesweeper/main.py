@@ -15,13 +15,14 @@ def main():
     addBombs(matrix, bombs, w, h)
     addNumbers(matrix, w, h)
     
-    #Print game to screen
-    for i in range(len(matrix)):
-        print(matrix[i])
+    drawBoardNumbers(win, matrix, w, h)
         
         
 
 ##  All methods below this  ##
+
+def drawBoardNumbers(win, matrix, w, h):
+    
 
 def initBoard(matrix, w, h):
     for i in range(h):
