@@ -8,9 +8,9 @@ def main():
     
     #Variables
     matrix = []
-    h = 9
-    w = 9
-    bombs = 10
+    h = 24
+    w = 30
+    bombs = 50
     plates = [] # Buttons on top of the numbers
     isPlaying = True
     
@@ -90,8 +90,12 @@ def drawCoverPlates(win, matrix, w, h, plates):
             
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
-    pic = "../Resources/block.gif"
-    cover = Image(Point(j*16+8, i*16+8), pic)
+    # pic = "../Resources/block.gif"
+    # cover = Image(Point(j*16+8, i*16+8), pic)
+    # cover.draw(win)
+    
+    cover = Rectangle(Point(j*16, i*16), Point((j+1)*16, (i+1)*16))
+    cover.setFill("grey")
     cover.draw(win)
     return cover
 
