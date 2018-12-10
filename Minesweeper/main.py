@@ -1,8 +1,10 @@
 from random import *
 from graphics import *
 import time
+import pygame as game
 
 def main():
+    game.init()
     
     #Variables
     matrix = []
@@ -34,18 +36,23 @@ def main():
     #Main Game
     while isPlaying:
         click = win.checkMouse()
+        click2 = game.mouse.get_pressed()
         clickPos = processClick(click)
         
         if clickPos != None:
-            isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h)
-            undrawCover(clickPos, plates, w)
+            isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
+        print(click2)
             
         win.update()
-        
+    
+    print(matrix)
     showAllBombs(win, matrix, plates, w)
     
 ##  All methods below this  ##
 
+def revealAdjacentTiles(x, y, plates):
+    pass
+    
 '''When the player loses the game all the bombs are revealed'''
 def showAllBombs(win, matrix, plates, w):
     for i in range(len(matrix)):
@@ -122,10 +129,14 @@ def addBombs(matrix, bombs, w, h):
         matrix[y][x] = "b"
 
 '''Gets and draws the number in the position of the click'''
-def checkNumber(win, matrix, x, y, w, h):
+def checkNumber(win, matrix, x, y, w, h, plates):
     if matrix[y][x] == " " or matrix[y][x] == "b":
         matrix[y][x] = checkAround(matrix, y, x, w, h)
         drawNumber(win, matrix[y][x], y, x)
+        undrawCover(Point(x, y), plates, w)
+        
+        if matrix[y][x] == " ":
+            revealAdjacentTiles(matrix, x, y, plates)
         
         if matrix[y][x] == "exp":
             return False
@@ -141,7 +152,7 @@ def checkNumber(win, matrix, x, y, w, h):
 #                 matrix[i][j] = checkAround(matrix, i, j, w, h)
             
 '''Checks around the clicked position for bombs (Gets values for Check())'''
-def checkAround(matrix, i, j, w, h):
+def checkAround(matrix, i, j, w, h): #If type == 1 (Normal Check) if type == 2 (Blank Check)
     bombsFound = 0
     w = w-1
     h = h-1
@@ -174,7 +185,7 @@ def checkAround(matrix, i, j, w, h):
                 bombsFound += Check(matrix, i, j, -1, 2, 0, 2) #Left Check
             else:
                 bombsFound += Check(matrix, i, j, -1, 2, -1, 1) #Right Check
-            
+    
     return str(bombsFound)
     
 '''Complement of checkAround (Actually checks around)'''
