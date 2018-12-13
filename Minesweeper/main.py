@@ -87,14 +87,16 @@ def showAllBombs(win, matrix, plates, w):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             if matrix[i][j] == "b":
-                plates[int(j + w*i)].undraw()
+                for item in plates[int(j + w*i)]:
+                    item.undraw()
                 drawBomb(win, i, j)
 
 '''Undraws the clicked button'''
 def undrawCover(pos, plates, w):
     x = pos.getX()
     y = pos.getY()
-    plates[int(x + (w * y))].undraw()
+    for item in plates[int(x + (w * y))]:
+        item.undraw()
 
 #def undrawCover2(pos, plates, w):
 #    x = pos.getX()
@@ -124,14 +126,60 @@ def drawCoverPlates(win, matrix, w, h, plates):
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
-    # pic = "../Resources/block.gif"
-    # cover = Image(Point(j*16+8, i*16+8), pic)
-    # cover.draw(win)
-
+    list = []
+    #Shades serve as a 3D effect
+    #Main Cover
     cover = Rectangle(Point(j*16, i*16), Point((j+1)*16, (i+1)*16))
-    cover.setFill("grey")
+    cover.setWidth(0)
+    cover.setFill("#C0C0C0")
     cover.draw(win)
-    return cover
+
+    #White Shades
+    white1 = Rectangle(Point(j*16, i*16),Point(j*16+1, (i+1)*16-1))
+    white1.setWidth(0)
+    white1.setFill("white")
+    white1.draw(win)
+    white2 = Rectangle(Point(j*16+1, i*16),Point(j*16+2, (i+1)*16-2))
+    white2.setWidth(0)
+    white2.setFill("white")
+    white2.draw(win)
+    white3 = Rectangle(Point(j*16, i*16),Point((j+1)*16-1, i*16+1))
+    white3.setWidth(0)
+    white3.setFill("white")
+    white3.draw(win)
+    white4 = Rectangle(Point(j*16+1, i*16),Point((j+1)*16-2, i*16+2))
+    white4.setWidth(0)
+    white4.setFill("white")
+    white4.draw(win)
+
+    #Grey Shades
+    grey1 = Rectangle(Point((j+1)*16, (i+1)*16),Point(j*16+1, (i+1)*16-1))
+    grey1.setWidth(0)
+    grey1.setFill("grey")
+    grey1.draw(win)
+    grey2 = Rectangle(Point((j+1)*16, (i+1)*16-1),Point(j*16+2, (i+1)*16-2))
+    grey2.setWidth(0)
+    grey2.setFill("grey")
+    grey2.draw(win)
+    grey3 = Rectangle(Point((j+1)*16, (i+1)*16),Point((j+1)*16-1, i*16+1))
+    grey3.setWidth(0)
+    grey3.setFill("grey")
+    grey3.draw(win)
+    grey4 = Rectangle(Point((j+1)*16-1, (i+1)*16),Point((j+1)*16-2, i*16+2))
+    grey4.setWidth(0)
+    grey4.setFill("grey")
+    grey4.draw(win)
+
+    list.append(white1)
+    list.append(white2)
+    list.append(white3)
+    list.append(white4)
+    list.append(grey1)
+    list.append(grey2)
+    list.append(grey3)
+    list.append(grey4)
+    list.append(cover)
+    return list
 
 # def drawBoardNumbers(win, matrix, w, h):
 #     for i in range(len(matrix)):
