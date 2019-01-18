@@ -13,9 +13,11 @@ def main():
     bombs = 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
+    click = 0
+    clickPos = None
 
     win = drawWindow(w, h)
-    win.update()
+    game.display.update()
 
     #Start loading time...
     time_start = time.perf_counter()
@@ -23,11 +25,6 @@ def main():
     #Methods
     initBoard(matrix, w, h)
     addBombs(matrix, bombs, w, h)
-    #addNumbers(matrix, w, h)
-    #drawBoardNumbers(win, matrix, w, h)
-    drawCoverPlates(win, matrix, w, h, plates)
-
-    win.update()
 
     #End loading time
     time_end = time.perf_counter() - time_start
@@ -35,22 +32,47 @@ def main():
 
     #Main Game
     while isPlaying:
-        click = win.checkMouse()
-        #click2 = game.mouse.get_pressed()
-        clickPos = processClick(click)
-
-        if clickPos != None:
+        clearScreen(win)
+        
+        #Main of all the events like button presses and mouse
+        for event in game.event.get():
+            if event.type == game.QUIT:
+                exit()
+            if event.type == game.MOUSEBUTTONDOWN:
+                click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
+                clickPos = processClick(game.mouse.get_pos())
+        
+        if click == 1:
             isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
-        #print(click2)
-
-        win.update()
+        elif click == 3:
+            changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
+            
+        drawCoverPlates(win, matrix, w, h, plates)
+        drawNumber(win, matrix)
+        
+        click = 0
+        game.display.update()
 
     #print(matrix)
     showAllBombs(win, matrix, plates, w)
-    win.getMouse()
-    win.close()
+    game.display.update()
+    #wait for click OR when the quit is pressed
+    game.display.quit()
 
 ##  All methods below this  ##
+
+def clearScreen(win):
+    win.fill(game.Color("black"))
+    
+def changeFlag(win, matrix, x, y):
+    if matrix[y][x] == "f":
+        matrix[y][x] = " "
+    elif matrix[y][x] == " ":
+        matrix[y][x] = "f"
+    elif matrix[y][x] == "b":
+        matrix[y][x] = "fb"
+    elif matrix[y][x] == "fb":
+        matrix[y][x] = "b"
 
 '''(Recursive Funtion)'''
 def revealAdjacentTiles(win, matrix, i, j, w, h, plates):
@@ -87,27 +109,13 @@ def showAllBombs(win, matrix, plates, w):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             if matrix[i][j] == "b":
-                for item in plates[int(j + w*i)]:
-                    item.undraw()
                 drawBomb(win, i, j)
-
-'''Undraws the clicked button'''
-def undrawCover(pos, plates, w):
-    x = pos.getX()
-    y = pos.getY()
-    for item in plates[int(x + (w * y))]:
-        item.undraw()
-
-#def undrawCover2(pos, plates, w):
-#    x = pos.getX()
-#    y = pos.getY()
-#    plates[int(x + y*30)].undraw()
 
 '''Transforms the clicked position to a grid position'''
 def processClick(click):
     if click != None:
-        x = click.getX()
-        y = click.getY()
+        x = click[0]
+        y = click[1]
         x = int(x / 16)
         y = int(y / 16)
         return Point(x, y)
@@ -115,60 +123,34 @@ def processClick(click):
 
 '''Draws the window, dynamic to the number of squares'''
 def drawWindow(w, h):
-    win = GraphWin("Minesweeper", w*16, h*16, autoflush=False) ## autoflush=False
+    game.display.set_caption('Minesweeper')
+    win = game.display.set_mode((w*16, h*16))
     return win
 
 '''Draws all the cover buttons of the grid'''
 def drawCoverPlates(win, matrix, w, h, plates):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
-            plates.append(drawPlate(win, matrix, i, j))
+            drawPlate(win, matrix, i, j)
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
     list = []
     #Shades serve as a 3D effect
     #Main Cover
-    cover = Rectangle(Point(j*16, i*16), Point((j+1)*16, (i+1)*16))
-    cover.setWidth(0)
-    cover.setFill("#C0C0C0")
-    cover.draw(win)
-
+    cover = game.draw.rect(win, (192, 192, 192), (j*16, i*16, 16, 16), 0)
+    
     #White Shades
-    white1 = Rectangle(Point(j*16, i*16),Point(j*16+1, (i+1)*16-1))
-    white1.setWidth(0)
-    white1.setFill("white")
-    white1.draw(win)
-    white2 = Rectangle(Point(j*16+1, i*16),Point(j*16+2, (i+1)*16-2))
-    white2.setWidth(0)
-    white2.setFill("white")
-    white2.draw(win)
-    white3 = Rectangle(Point(j*16, i*16),Point((j+1)*16-1, i*16+1))
-    white3.setWidth(0)
-    white3.setFill("white")
-    white3.draw(win)
-    white4 = Rectangle(Point(j*16+1, i*16),Point((j+1)*16-2, i*16+2))
-    white4.setWidth(0)
-    white4.setFill("white")
-    white4.draw(win)
+    white1 = game.draw.rect(win, (255, 255, 255), (j*16, i*16, 16-1, 1), 0)
+    white2 = game.draw.rect(win, (255, 255, 255), (j*16, i*16+1, 16-2, 1), 0)
+    white3 = game.draw.rect(win, (255, 255, 255), (j*16,i*16, 1, 16-1), 0)
+    white4 = game.draw.rect(win, (255, 255, 255), (j*16+1, i*16, 1, 16-2), 0)
 
-    #Grey Shades
-    grey1 = Rectangle(Point((j+1)*16, (i+1)*16),Point(j*16+1, (i+1)*16-1))
-    grey1.setWidth(0)
-    grey1.setFill("grey")
-    grey1.draw(win)
-    grey2 = Rectangle(Point((j+1)*16, (i+1)*16-1),Point(j*16+2, (i+1)*16-2))
-    grey2.setWidth(0)
-    grey2.setFill("grey")
-    grey2.draw(win)
-    grey3 = Rectangle(Point((j+1)*16, (i+1)*16),Point((j+1)*16-1, i*16+1))
-    grey3.setWidth(0)
-    grey3.setFill("grey")
-    grey3.draw(win)
-    grey4 = Rectangle(Point((j+1)*16-1, (i+1)*16),Point((j+1)*16-2, i*16+2))
-    grey4.setWidth(0)
-    grey4.setFill("grey")
-    grey4.draw(win)
+    #Grey Shades #...This is so confusing...
+    grey1 = game.draw.rect(win, (128, 128, 128), ((j+1)*16, (i+1)*16-1, -16+3, 0), 0)
+    grey2 = game.draw.rect(win, (128, 128, 128), ((j+1)*16, (i+1)*16, -16+2, 0), 0)
+    grey3 = game.draw.rect(win, (128, 128, 128), ((j+1)*16, (i+1)*16, 0, -16+2), 0)
+    grey4 = game.draw.rect(win, (128, 128, 128), ((j+1)*16-1, (i+1)*16, 0, -16+3), 0)
 
     list.append(white1)
     list.append(white2)
@@ -179,25 +161,28 @@ def drawPlate(win, matrix, i, j):
     list.append(grey3)
     list.append(grey4)
     list.append(cover)
+    
     return list
-
-# def drawBoardNumbers(win, matrix, w, h):
-#     for i in range(len(matrix)):
-#         for j in range(len(matrix[i])):
-#             if matrix[i][j] != " ":
-#                 drawNumber(win, matrix[i][j], i, j)
 
 '''Draws the remaining bombs after the player lost the game'''
 def drawBomb(win, i, j):
     pic = "../Resources/b.gif"
-    pict = Image(Point(j*16+8, i*16+8), pic)
-    pict.draw(win)
+    img = game.image.load(pic)
+    win.blit(img, (j*16, i*16))
 
 '''Draws the number on the screen (also applies for bombs)'''
-def drawNumber(win, num, i, j):
-    pic = "../Resources/" + num + ".gif"
-    picture = Image(Point(j*16+8, i*16+8), pic)
-    picture.draw(win)
+def drawNumber(win, matrix):
+    for i in range(len(matrix)):
+        for j in range(len(matrix[i])):
+            num = matrix[i][j]
+            if num != "b" and num != " " and num != "f" and num != "fb":
+                pic = "../Resources/" + num + ".gif"
+                img = game.image.load(pic)
+                win.blit(img, (j*16, i*16))
+            if num == "f" or num == "fb":
+                pic = "../Resources/flag.gif"
+                img = game.image.load(pic)
+                win.blit(img, (j*16, i*16))
 
 '''Initializes the board array with empty values'''
 def initBoard(matrix, w, h):
@@ -216,13 +201,9 @@ def addBombs(matrix, bombs, w, h):
 
 '''Gets and draws the number in the position of the click'''
 def checkNumber(win, matrix, x, y, w, h, plates):
-    if matrix[y][x] == " " or matrix[y][x] == "b" or matrix[y][x] == "0":
+    if matrix[y][x] == " " or matrix[y][x] == "b" or matrix[y][x] == "0" and matrix[x][y] != "f":
         matrix[y][x] = checkAround(matrix, y, x, w, h)
-        drawNumber(win, matrix[y][x], y, x)
-        undrawCover(Point(x, y), plates, w)
-
-        #win.update()
-
+        
         if matrix[y][x] == "0":
             revealAdjacentTiles(win, matrix, y, x, w, h, plates)
 
@@ -233,18 +214,10 @@ def checkNumber(win, matrix, x, y, w, h, plates):
 
     return True
 
-# def addNumbers(matrix, w, h):
-#     for i in range(len(matrix)):
-#         for j in range(len(matrix[i])):
-#             if matrix[i][j] == " ":
-#                 matrix[i][j] = checkAround(matrix, i, j, w, h)
-
 '''Below this line it is very non optimized and bad written code'''
 
 '''Checks if the button is on top of screen'''
 def topCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j-1] == " ":
         checkNumber(win, matrix, j-1, i, w, h, plates)
 
@@ -256,8 +229,6 @@ def topCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if button is on bottom of the screen'''
 def bottomCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j-1] == " ":
         checkNumber(win, matrix, j-1, i, w, h, plates)
 
@@ -269,8 +240,6 @@ def bottomCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks all around the button'''
 def fullCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j-1] == " ":
         checkNumber(win, matrix, j-1, i, w, h, plates)
 
@@ -285,8 +254,6 @@ def fullCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if the button is on the top left corner'''
 def topLeftCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j+1] == " ":
         checkNumber(win, matrix, j+1, i, w, h, plates)
 
@@ -295,8 +262,6 @@ def topLeftCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if the button is on the top right corner'''
 def topRightCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j-1] == " ":
         checkNumber(win, matrix, j-1, i, w, h, plates)
 
@@ -305,8 +270,6 @@ def topRightCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if the button is on the bottom left corner'''
 def bottomLeftCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j+1] == " ":
         checkNumber(win, matrix, j+1, i, w, h, plates)
 
@@ -315,8 +278,6 @@ def bottomLeftCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if the button is on the bottom right corner'''
 def bottomRightCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j-1] == " ":
         checkNumber(win, matrix, j-1, i, w, h, plates)
 
@@ -325,8 +286,6 @@ def bottomRightCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if the button is on the left'''
 def leftCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j+1] == " ":
         checkNumber(win, matrix, j+1, i, w, h, plates)
 
@@ -338,8 +297,6 @@ def leftCheck(win, matrix, j, i, plates, w, h):
 
 '''Checks if the button is on the right'''
 def rightCheck(win, matrix, j, i, plates, w, h):
-    undrawCover(Point(j, i), plates, w)
-
     if matrix[i][j-1] == " ":
         checkNumber(win, matrix, j-1, i, w, h, plates)
 
