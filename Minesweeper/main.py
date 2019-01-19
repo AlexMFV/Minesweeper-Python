@@ -2,19 +2,23 @@ from random import *
 from graphics import *
 import time
 import pygame as game
+import sys
 
 def main():
+    sys.setrecursionlimit(2000) #Default 1000 (Stack overflow sometimes when board is at maximum size possible)
     game.init()
-
+    
     #Variables
     matrix = []
-    h = 9
-    w = 9
-    bombs = 10
+    h = 24 #max: 24
+    w = 30 #max: 30
+    bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
+    hasStarted = True
     click = 0
-    clickPos = None
+    clickPos = [0, 0]
+    clickState = None
 
     win = drawWindow(w, h)
     game.display.update()
@@ -31,32 +35,44 @@ def main():
     print("Time to load:",time_end)
 
     #Main Game
-    while isPlaying:
-        clearScreen(win)
-        
-        #Main of all the events like button presses and mouse
-        for event in game.event.get():
-            if event.type == game.QUIT:
-                exit()
-            if event.type == game.MOUSEBUTTONDOWN:
-                click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
-                clickPos = processClick(game.mouse.get_pos())
-        
-        if click == 1:
-            isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
-        elif click == 3:
-            changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
+    while hasStarted:
+        while isPlaying:
+            clearScreen(win)
             
-        drawCoverPlates(win, matrix, w, h, plates)
-        drawNumber(win, matrix)
+            '''Gets the current state of the mouse presses'''
+            clickState = game.mouse.get_pressed()
+            
+            #Main of all the events like button presses and mouse
+            for event in game.event.get():
+                if event.type == game.QUIT:
+                    exit()
+                if event.type == game.MOUSEBUTTONDOWN:
+                    click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
+                    clickPos = game.mouse.get_pos()
+            
+            #Draws the emoji face when clicked
+            if clickState[0] == 1:
+                pass
+                
+            if clickPos[0] >= 12 and clickPos[1] >= 55 and clickPos[0] < w*16+12 and clickPos[1] < h*16+55:
+                print(clickPos)
+                clickPos = processClick(clickPos)
+                if click == 1:
+                    isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
+                    #checkWin()
+                elif click == 3:
+                    changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
+                
+            drawCoverPlates(win, matrix, w, h, plates)
+            drawNumber(win, matrix)
+            
+            click = 0
+            clickPos = [0, 0]
+            drawGameBorders(win, w, h)
+            game.display.update()
         
-        click = 0
-        game.display.update()
-
-    #print(matrix)
     showAllBombs(win, matrix, plates, w)
     game.display.update()
-    #wait for click OR when the quit is pressed
     game.display.quit()
 
 ##  All methods below this  ##
@@ -108,14 +124,14 @@ def revealAdjacentTiles(win, matrix, i, j, w, h, plates):
 def showAllBombs(win, matrix, plates, w):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
-            if matrix[i][j] == "b":
+            if matrix[i][j] == "b" or matrix[i][j] == "fb":
                 drawBomb(win, i, j)
 
 '''Transforms the clicked position to a grid position'''
 def processClick(click):
     if click != None:
-        x = click[0]
-        y = click[1]
+        x = click[0]-12
+        y = click[1]-55
         x = int(x / 16)
         y = int(y / 16)
         return Point(x, y)
@@ -124,7 +140,7 @@ def processClick(click):
 '''Draws the window, dynamic to the number of squares'''
 def drawWindow(w, h):
     game.display.set_caption('Minesweeper')
-    win = game.display.set_mode((w*16, h*16))
+    win = game.display.set_mode((20+w*16, 64+h*16))
     return win
 
 '''Draws all the cover buttons of the grid'''
@@ -132,25 +148,36 @@ def drawCoverPlates(win, matrix, w, h, plates):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             drawPlate(win, matrix, i, j)
+            
+def drawGameBorders(win, w, h):
+    #White Shades
+    white1 = game.draw.rect(win, (255, 255, 255), (0, 0, 20+w*16, 3), 0)
+    white2 = game.draw.rect(win, (255, 255, 255), (0, 0, 3, 64+h*16), 0)
+    
+    #Grey Shades
+    grey1 = game.draw.rect(win, (192, 192, 192), (3, 3, 17+w*16, 6), 0)
+    grey2 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
+    grey3 = game.draw.rect(win, (192, 192, 192), (3, 3, w*16, -6), 0)
+    grey4 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
     list = []
     #Shades serve as a 3D effect
     #Main Cover
-    cover = game.draw.rect(win, (192, 192, 192), (j*16, i*16, 16, 16), 0)
+    cover = game.draw.rect(win, (192, 192, 192), (j*16+12, i*16+55, 16, 16), 0)
     
     #White Shades
-    white1 = game.draw.rect(win, (255, 255, 255), (j*16, i*16, 16-1, 1), 0)
-    white2 = game.draw.rect(win, (255, 255, 255), (j*16, i*16+1, 16-2, 1), 0)
-    white3 = game.draw.rect(win, (255, 255, 255), (j*16,i*16, 1, 16-1), 0)
-    white4 = game.draw.rect(win, (255, 255, 255), (j*16+1, i*16, 1, 16-2), 0)
+    white1 = game.draw.rect(win, (255, 255, 255), (j*16+12, i*16+55, 16-1, 1), 0)
+    white2 = game.draw.rect(win, (255, 255, 255), (j*16+12, i*16+56, 16-2, 1), 0)
+    white3 = game.draw.rect(win, (255, 255, 255), (j*16+12,i*16+55, 1, 16-1), 0)
+    white4 = game.draw.rect(win, (255, 255, 255), (j*16+13, i*16+55, 1, 16-2), 0)
 
     #Grey Shades #...This is so confusing...
-    grey1 = game.draw.rect(win, (128, 128, 128), ((j+1)*16, (i+1)*16-1, -16+3, 0), 0)
-    grey2 = game.draw.rect(win, (128, 128, 128), ((j+1)*16, (i+1)*16, -16+2, 0), 0)
-    grey3 = game.draw.rect(win, (128, 128, 128), ((j+1)*16, (i+1)*16, 0, -16+2), 0)
-    grey4 = game.draw.rect(win, (128, 128, 128), ((j+1)*16-1, (i+1)*16, 0, -16+3), 0)
+    grey1 = game.draw.rect(win, (128, 128, 128), ((j+1)*16+12, (i+1)*16+54, -16+3, 0), 0)
+    grey2 = game.draw.rect(win, (128, 128, 128), ((j+1)*16+12, (i+1)*16+55, -16+2, 0), 0)
+    grey3 = game.draw.rect(win, (128, 128, 128), ((j+1)*16+12, (i+1)*16+55, 0, -16+2), 0)
+    grey4 = game.draw.rect(win, (128, 128, 128), ((j+1)*16+11, (i+1)*16+55, 0, -16+3), 0)
 
     list.append(white1)
     list.append(white2)
@@ -168,21 +195,27 @@ def drawPlate(win, matrix, i, j):
 def drawBomb(win, i, j):
     pic = "../Resources/b.gif"
     img = game.image.load(pic)
-    win.blit(img, (j*16, i*16))
+    win.blit(img, (j*16+12, i*16+55))
 
 '''Draws the number on the screen (also applies for bombs)'''
 def drawNumber(win, matrix):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             num = matrix[i][j]
-            if num != "b" and num != " " and num != "f" and num != "fb":
+            if num != "b" and num != " " and num != "f" and num != "fb" and num != "0":
                 pic = "../Resources/" + num + ".gif"
                 img = game.image.load(pic)
-                win.blit(img, (j*16, i*16))
+                win.blit(img, (j*16+12, i*16+55))
             if num == "f" or num == "fb":
                 pic = "../Resources/flag.gif"
                 img = game.image.load(pic)
-                win.blit(img, (j*16, i*16))
+                win.blit(img, (j*16+12, i*16+55))
+            if num == "0":
+                drawBlackSpace(win, i, j)
+                
+def drawBlackSpace(win, y, x):
+    grey = game.draw.rect(win, (128, 128, 128), (x*16+12, y*16+55, 16, 16), 2)
+    lightGrey = game.draw.rect(win, (192, 192, 192), (x*16+13, y*16+56, 14, 14), 0)
 
 '''Initializes the board array with empty values'''
 def initBoard(matrix, w, h):
@@ -348,10 +381,9 @@ def checkAround(matrix, i, j, w, h):
 '''Complement of checkAround (Actually checks around)'''
 def Check(matrix, i, j, s1, e1, s2, e2):
     val = 0
-
     for line in range(s1, e1):
         for row in range(s2, e2):
-            if matrix[int(i+line)][int(j+row)] == "b":
+            if matrix[int(i+line)][int(j+row)] == "b" or matrix[int(i+line)][int(j+row)] == "fb":
                 val += 1
     return val
 
