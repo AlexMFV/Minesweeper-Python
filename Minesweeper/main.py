@@ -7,11 +7,11 @@ import sys
 def main():
     sys.setrecursionlimit(2000) #Default 1000 (Stack overflow sometimes when board is at maximum size possible)
     game.init()
-    
+
     #Variables
     matrix = []
-    h = 24 #max: 24
-    w = 30 #max: 30
+    h = 9 #max: 24
+    w = 9 #max: 30
     bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
@@ -19,6 +19,12 @@ def main():
     click = 0
     clickPos = [0, 0]
     clickState = None
+
+    if h > 24:
+        h = 24
+
+    if w > 30:
+        w = 30
 
     win = drawWindow(w, h)
     game.display.update()
@@ -35,51 +41,51 @@ def main():
     print("Time to load:",time_end)
 
     #Main Game
-    while hasStarted:
-        while isPlaying:
-            clearScreen(win)
-            
-            '''Gets the current state of the mouse presses'''
-            clickState = game.mouse.get_pressed()
-            
-            #Main of all the events like button presses and mouse
-            for event in game.event.get():
-                if event.type == game.QUIT:
-                    exit()
-                if event.type == game.MOUSEBUTTONDOWN:
-                    click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
-                    clickPos = game.mouse.get_pos()
-            
-            #Draws the emoji face when clicked
-            if clickState[0] == 1:
-                pass
-                
-            if clickPos[0] >= 12 and clickPos[1] >= 55 and clickPos[0] < w*16+12 and clickPos[1] < h*16+55:
-                print(clickPos)
-                clickPos = processClick(clickPos)
-                if click == 1:
-                    isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
-                    #checkWin()
-                elif click == 3:
-                    changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
-                
-            drawCoverPlates(win, matrix, w, h, plates)
-            drawNumber(win, matrix)
-            
-            click = 0
-            clickPos = [0, 0]
-            drawGameBorders(win, w, h)
-            game.display.update()
-        
+    #while hasStarted:
+    while isPlaying:
+        clearScreen(win)
+
+        '''Gets the current state of the mouse presses'''
+        clickState = game.mouse.get_pressed()
+
+        #Main of all the events like button presses and mouse
+        for event in game.event.get():
+            if event.type == game.QUIT:
+                exit()
+            if event.type == game.MOUSEBUTTONDOWN:
+                click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
+                clickPos = game.mouse.get_pos()
+
+        #Draws the emoji face when clicked
+        if clickState[0] == 1:
+            pass
+
+        if clickPos[0] >= 12 and clickPos[1] >= 55 and clickPos[0] < w*16+12 and clickPos[1] < h*16+55:
+            print(clickPos)
+            clickPos = processClick(clickPos)
+            if click == 1:
+                isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
+                #checkWin()
+            elif click == 3:
+                changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
+
+        drawCoverPlates(win, matrix, w, h, plates)
+        drawNumber(win, matrix)
+
+        click = 0
+        clickPos = [0, 0]
+        drawGameBorders(win, w, h)
+        game.display.update()
+
     showAllBombs(win, matrix, plates, w)
     game.display.update()
-    game.display.quit()
+    #game.display.quit()
 
 ##  All methods below this  ##
 
 def clearScreen(win):
     win.fill(game.Color("black"))
-    
+
 def changeFlag(win, matrix, x, y):
     if matrix[y][x] == "f":
         matrix[y][x] = " "
@@ -148,12 +154,12 @@ def drawCoverPlates(win, matrix, w, h, plates):
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             drawPlate(win, matrix, i, j)
-            
+
 def drawGameBorders(win, w, h):
     #White Shades
     white1 = game.draw.rect(win, (255, 255, 255), (0, 0, 20+w*16, 3), 0)
     white2 = game.draw.rect(win, (255, 255, 255), (0, 0, 3, 64+h*16), 0)
-    
+
     #Grey Shades
     grey1 = game.draw.rect(win, (192, 192, 192), (3, 3, 17+w*16, 6), 0)
     grey2 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
@@ -166,7 +172,7 @@ def drawPlate(win, matrix, i, j):
     #Shades serve as a 3D effect
     #Main Cover
     cover = game.draw.rect(win, (192, 192, 192), (j*16+12, i*16+55, 16, 16), 0)
-    
+
     #White Shades
     white1 = game.draw.rect(win, (255, 255, 255), (j*16+12, i*16+55, 16-1, 1), 0)
     white2 = game.draw.rect(win, (255, 255, 255), (j*16+12, i*16+56, 16-2, 1), 0)
@@ -188,7 +194,7 @@ def drawPlate(win, matrix, i, j):
     list.append(grey3)
     list.append(grey4)
     list.append(cover)
-    
+
     return list
 
 '''Draws the remaining bombs after the player lost the game'''
@@ -212,7 +218,7 @@ def drawNumber(win, matrix):
                 win.blit(img, (j*16+12, i*16+55))
             if num == "0":
                 drawBlackSpace(win, i, j)
-                
+
 def drawBlackSpace(win, y, x):
     grey = game.draw.rect(win, (128, 128, 128), (x*16+12, y*16+55, 16, 16), 2)
     lightGrey = game.draw.rect(win, (192, 192, 192), (x*16+13, y*16+56, 14, 14), 0)
@@ -236,7 +242,7 @@ def addBombs(matrix, bombs, w, h):
 def checkNumber(win, matrix, x, y, w, h, plates):
     if matrix[y][x] == " " or matrix[y][x] == "b" or matrix[y][x] == "0" and matrix[x][y] != "f":
         matrix[y][x] = checkAround(matrix, y, x, w, h)
-        
+
         if matrix[y][x] == "0":
             revealAdjacentTiles(win, matrix, y, x, w, h, plates)
 
