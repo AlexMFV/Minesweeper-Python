@@ -128,11 +128,18 @@ def revealAdjacentTiles(win, matrix, i, j, w, h, plates):
 
 '''When the player loses the game all the bombs are revealed'''
 def showAllBombs(win, matrix, plates, w):
+    for a in range(len(matrix)):
+        for b in range(len(matrix[a])):
+            if matrix[a][b] == "f":
+                matrix[a][b] = "wbf"
+    
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
-            if matrix[i][j] == "b" or matrix[i][j] == "fb":
+            if matrix[i][j] == "b":
                 drawBomb(win, i, j)
-
+            elif matrix[i][j] == "wbf":
+                drawWrongFlag(win, i, j)
+                
 '''Transforms the clicked position to a grid position'''
 def processClick(click):
     if click != None:
@@ -156,15 +163,16 @@ def drawCoverPlates(win, matrix, w, h, plates):
             drawPlate(win, matrix, i, j)
 
 def drawGameBorders(win, w, h):
-    #White Shades
-    white1 = game.draw.rect(win, (255, 255, 255), (0, 0, 20+w*16, 3), 0)
-    white2 = game.draw.rect(win, (255, 255, 255), (0, 0, 3, 64+h*16), 0)
-
+    
     #Grey Shades
     grey1 = game.draw.rect(win, (192, 192, 192), (3, 3, 17+w*16, 6), 0)
     grey2 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
     grey3 = game.draw.rect(win, (192, 192, 192), (3, 3, w*16, -6), 0)
     grey4 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
+    
+    #White Shades
+    white1 = game.draw.rect(win, (255, 255, 255), (0, 0, 20+w*16, 3), 0)
+    white2 = game.draw.rect(win, (255, 255, 255), (0, 0, 3, 64+h*16), 0)
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
@@ -196,6 +204,12 @@ def drawPlate(win, matrix, i, j):
     list.append(cover)
 
     return list
+    
+'''Draws the flags that are placed wrongly'''
+def drawWrongFlag(win, i, j):
+    pic = "../Resources/wbf.gif"
+    img = game.image.load(pic)
+    win.blit(img, (j*16+12, i*16+55))
 
 '''Draws the remaining bombs after the player lost the game'''
 def drawBomb(win, i, j):
