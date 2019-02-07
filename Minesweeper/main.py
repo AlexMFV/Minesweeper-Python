@@ -41,14 +41,11 @@ def main():
     print("Time to load:",time_end)
 
     #Main Game
-    #while hasStarted:
-    while isPlaying:
-        clearScreen(win)
-
-        '''Gets the current state of the mouse presses'''
+    while hasStarted:
+        width, height = game.display.get_surface().get_size()
+        #Get the mouse click state
         clickState = game.mouse.get_pressed()
 
-        #Main of all the events like button presses and mouse
         for event in game.event.get():
             if event.type == game.QUIT:
                 exit()
@@ -56,31 +53,48 @@ def main():
                 click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
                 clickPos = game.mouse.get_pos()
 
-        #Draws the emoji face when clicked
-        if clickState[0] == 1:
-            pass
+        drawFace(win, w, h, clickPos, clickState, click, isPlaying)
 
-        if clickPos[0] >= 12 and clickPos[1] >= 55 and clickPos[0] < w*16+12 and clickPos[1] < h*16+55:
-            print(clickPos)
-            clickPos = processClick(clickPos)
-            if click == 1:
-                isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
-                #checkWin()
-            elif click == 3:
-                changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
+        while isPlaying:
+            width, height = game.display.get_surface().get_size()
+            clearScreen(win)
 
-        drawFullCover(win, w, h)
-        drawCoverPlates(win, matrix, w, h, plates)
-        drawNumber(win, matrix)
-        drawGameBorders(win, w, h)
-        drawFace(win, w, h, clickPos, clickState, click)
+            '''Gets the current state of the mouse presses'''
+            clickState = game.mouse.get_pressed()
 
-        click = 0
-        clickPos = [0, 0]
+            #Main of all the events like button presses and mouse
+            for event in game.event.get():
+                if event.type == game.QUIT:
+                    exit()
+                if event.type == game.MOUSEBUTTONDOWN:
+                    click = event.button #1 = Left, 2 = Middle, 3 = Right, 4 = Scroll Up, 5 = Scroll Down
+                    clickPos = game.mouse.get_pos()
+
+
+            if clickPos[0] >= 12 and clickPos[1] >= 55 and clickPos[0] < w*16+12 and clickPos[1] < h*16+55:
+                print(clickPos)
+                clickPos = processClick(clickPos)
+                if click == 1:
+                    isPlaying = checkNumber(win, matrix, int(clickPos.getX()), int(clickPos.getY()), w, h, plates)
+                elif click == 3:
+                    changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
+
+            drawFullCover(win, w, h)
+            drawCoverPlates(win, matrix, w, h, plates)
+            drawNumber(win, matrix)
+            drawGameBorders(win, w, h)
+            
+            if clickState[0] == 1 and clickPos[0] >= width/2-12 and clickPos[0] <= width/2+12 and clickPos[1] >= 15 and clickPos[1] <= 40:
+                drawPressedFace(win, w, h)
+            else:
+                drawFace(win, w, h, clickPos, clickState, click, isPlaying)
+
+            click = 0
+            clickPos = [0, 0]
+            game.display.update()
+
+        showAllBombs(win, matrix, plates, w)
         game.display.update()
-
-    showAllBombs(win, matrix, plates, w)
-    game.display.update()
     #game.display.quit()
 
 ##  All methods below this  ##
@@ -214,18 +228,23 @@ def drawGameBorders(win, w, h):
     greyF2 = game.draw.rect(win, (128, 128, 128), (9, 10, 4+w*16, 1), 0)
     greyF3 = game.draw.rect(win, (128, 128, 128), (9, 9, 1, 36), 0)
     greyF4 = game.draw.rect(win, (128, 128, 128), (10, 9, 1, 35), 0)
+    
+def drawPressedFace(win, w, h):
+    pic = "../Resources/pressed.gif"
+    img = game.image.load(pic)
+    win.blit(img, (width/2-12, 15))
 
-def drawFace(win, w, h, clickPos, clickState, click):
+def drawFace(win, w, h, clickPos, clickState, click, isPlaying):
     width, height = game.display.get_surface().get_size()
-    
-    if clickState[0] == 1 or clickState[1] == 1 or clickState[2] == 1:
-        if clickPos[0] > width/2-12 and clickPos[1] > 15 and clickPos[0] < width/2+12 and clickPos[1] < 40:
-            type = "pressed"
-        else:
+
+    if isPlaying:
+        if clickState[0] == 1:
             type = "click"
+        else:
+            type = "normal"
     else:
-        type = "normal"
-    
+        type = "dead"
+
     pic = "../Resources/" + type + ".gif"
     img = game.image.load(pic)
     win.blit(img, (width/2-12, 15))
