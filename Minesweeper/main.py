@@ -10,8 +10,8 @@ def main():
 
     #Variables
     matrix = []
-    h = 24 #max: 24
-    w = 30 #max: 30
+    h = 9 #max: 24
+    w = 9 #max: 30
     bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
@@ -73,6 +73,7 @@ def main():
         drawCoverPlates(win, matrix, w, h, plates)
         drawNumber(win, matrix)
         drawGameBorders(win, w, h)
+        drawFace(win, w, h, clickPos, clickState, click)
 
         click = 0
         clickPos = [0, 0]
@@ -213,6 +214,21 @@ def drawGameBorders(win, w, h):
     greyF2 = game.draw.rect(win, (128, 128, 128), (9, 10, 4+w*16, 1), 0)
     greyF3 = game.draw.rect(win, (128, 128, 128), (9, 9, 1, 36), 0)
     greyF4 = game.draw.rect(win, (128, 128, 128), (10, 9, 1, 35), 0)
+
+def drawFace(win, w, h, clickPos, clickState, click):
+    width, height = game.display.get_surface().get_size()
+    
+    if clickState[0] == 1 or clickState[1] == 1 or clickState[2] == 1:
+        if clickPos[0] > width/2-12 and clickPos[1] > 15 and clickPos[0] < width/2+12 and clickPos[1] < 40:
+            type = "pressed"
+        else:
+            type = "click"
+    else:
+        type = "normal"
+    
+    pic = "../Resources/" + type + ".gif"
+    img = game.image.load(pic)
+    win.blit(img, (width/2-12, 15))
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
