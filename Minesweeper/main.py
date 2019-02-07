@@ -10,8 +10,8 @@ def main():
 
     #Variables
     matrix = []
-    h = 9 #max: 24
-    w = 9 #max: 30
+    h = 24 #max: 24
+    w = 30 #max: 30
     bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
