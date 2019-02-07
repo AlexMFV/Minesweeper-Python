@@ -10,8 +10,8 @@ def main():
 
     #Variables
     matrix = []
-    h = 9 #max: 24
-    w = 9 #max: 30
+    h = 24 #max: 24
+    w = 30 #max: 30
     bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
@@ -69,12 +69,13 @@ def main():
             elif click == 3:
                 changeFlag(win, matrix, int(clickPos.getX()), int(clickPos.getY()))
 
+        drawFullCover(win, w, h)
         drawCoverPlates(win, matrix, w, h, plates)
         drawNumber(win, matrix)
+        drawGameBorders(win, w, h)
 
         click = 0
         clickPos = [0, 0]
-        drawGameBorders(win, w, h)
         game.display.update()
 
     showAllBombs(win, matrix, plates, w)
@@ -132,14 +133,14 @@ def showAllBombs(win, matrix, plates, w):
         for b in range(len(matrix[a])):
             if matrix[a][b] == "f":
                 matrix[a][b] = "wbf"
-    
+
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
             if matrix[i][j] == "b":
                 drawBomb(win, i, j)
             elif matrix[i][j] == "wbf":
                 drawWrongFlag(win, i, j)
-                
+
 '''Transforms the clicked position to a grid position'''
 def processClick(click):
     if click != None:
@@ -162,17 +163,46 @@ def drawCoverPlates(win, matrix, w, h, plates):
         for j in range(len(matrix[i])):
             drawPlate(win, matrix, i, j)
 
+def drawFullCover(win, w, h):
+    ##Full Background Shade
+    full = game.draw.rect(win, (192, 192, 192), (0, 0, 20+w*16, 64+h*16), 0)
+
 def drawGameBorders(win, w, h):
-    
+
     #Grey Shades
     grey1 = game.draw.rect(win, (192, 192, 192), (3, 3, 17+w*16, 6), 0)
     grey2 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
     grey3 = game.draw.rect(win, (192, 192, 192), (3, 3, w*16, -6), 0)
     grey4 = game.draw.rect(win, (192, 192, 192), (3, 3, 6, 61+h*16), 0)
-    
+
     #White Shades
     white1 = game.draw.rect(win, (255, 255, 255), (0, 0, 20+w*16, 3), 0)
     white2 = game.draw.rect(win, (255, 255, 255), (0, 0, 3, 64+h*16), 0)
+
+    ##Inner Shades
+    white3 = game.draw.rect(win, (255, 255, 255), (10, 57+h*16, 1+w*16, 57+h*16), 0)
+    white4 = game.draw.rect(win, (255, 255, 255), (11, 56+h*16, 1+w*16, 57+h*16), 0)
+    white5 = game.draw.rect(win, (255, 255, 255), (12, 55+h*16, 1+w*16, 57+h*16), 0)
+
+    white6 = game.draw.rect(win, (255, 255, 255), (12+w*16, 55, 1, 54+h*16), 0)
+    white7 = game.draw.rect(win, (255, 255, 255), (13+w*16, 54, 1, 54+h*16), 0)
+    white8 = game.draw.rect(win, (255, 255, 255), (14+w*16, 53, 1, 54+h*16), 0)
+
+    ##Inner Grey Shades
+    grey5 = game.draw.rect(win, (128, 128, 128), (9, 52, 5+w*16, 1), 0)
+    grey6 = game.draw.rect(win, (128, 128, 128), (9, 53, 4+w*16, 1), 0)
+    grey7 = game.draw.rect(win, (128, 128, 128), (9, 54, 3+w*16, 1), 0)
+
+    grey8 = game.draw.rect(win, (128, 128, 128), (9, 55, 1, 2+h*16), 0)
+    grey9 = game.draw.rect(win, (128, 128, 128), (10, 55, 1, 1+h*16), 0)
+    grey10 = game.draw.rect(win, (128, 128, 128), (11, 55, 1, h*16), 0)
+
+    #Left Grey Shades
+    grey11 = game.draw.rect(win, (192, 192, 192), (16+w*16, 3, 18+w*16, 64+h*16), 0)
+
+    #Bottom Grey Shades
+    grey12 = game.draw.rect(win, (192, 192, 192), (2, 58+h*16, 18+w*16, 64+h*16), 0)
+    #white4 = game.draw.rect(win, (255, 255, 255), (), 0)
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
@@ -204,7 +234,7 @@ def drawPlate(win, matrix, i, j):
     list.append(cover)
 
     return list
-    
+
 '''Draws the flags that are placed wrongly'''
 def drawWrongFlag(win, i, j):
     pic = "../Resources/wbf.gif"
