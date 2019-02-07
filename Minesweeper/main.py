@@ -10,8 +10,8 @@ def main():
 
     #Variables
     matrix = []
-    h = 24 #max: 24
-    w = 30 #max: 30
+    h = 9 #max: 24
+    w = 9 #max: 30
     bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
@@ -202,7 +202,17 @@ def drawGameBorders(win, w, h):
 
     #Bottom Grey Shades
     grey12 = game.draw.rect(win, (192, 192, 192), (2, 58+h*16, 18+w*16, 64+h*16), 0)
-    #white4 = game.draw.rect(win, (255, 255, 255), (), 0)
+
+    #Face Shades
+    whiteF1 = game.draw.rect(win, (255, 255, 255), (11, 44, 3+w*16, 1), 0)
+    whiteF2 = game.draw.rect(win, (255, 255, 255), (10, 45, 4+w*16, 1), 0)
+    whiteF3 = game.draw.rect(win, (255, 255, 255), (13+w*16, 45, 1, -33), 0)
+    whiteF4 = game.draw.rect(win, (255, 255, 255), (14+w*16, 45, 1, -34), 0)
+
+    greyF1 = game.draw.rect(win, (128, 128, 128), (9, 9, 5+w*16, 1), 0)
+    greyF2 = game.draw.rect(win, (128, 128, 128), (9, 10, 4+w*16, 1), 0)
+    greyF3 = game.draw.rect(win, (128, 128, 128), (9, 9, 1, 36), 0)
+    greyF4 = game.draw.rect(win, (128, 128, 128), (10, 9, 1, 35), 0)
 
 '''Draws the cover button in the position retrieved'''
 def drawPlate(win, matrix, i, j):
