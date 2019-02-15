@@ -15,6 +15,7 @@ def main():
     bombs = 10 #min 10
     plates = [] # Buttons on top of the numbers
     isPlaying = True
+    hasEnded = False
     hasStarted = True
     click = 0
     clickPos = [0, 0]
@@ -83,21 +84,41 @@ def main():
             drawCoverPlates(win, matrix, w, h, plates)
             drawNumber(win, matrix)
             drawGameBorders(win, w, h)
-            
+
             if clickState[0] == 1 and clickPos[0] >= width/2-12 and clickPos[0] <= width/2+12 and clickPos[1] >= 15 and clickPos[1] <= 40:
-                drawPressedFace(win, w, h)
+                drawPressedFace(win, width, height)
             else:
                 drawFace(win, w, h, clickPos, clickState, click, isPlaying)
 
+            if isPlaying == True:
+                hasEnded = False
+            else:
+                hasEnded = True
+                
             click = 0
             clickPos = [0, 0]
             game.display.update()
 
-        showAllBombs(win, matrix, plates, w)
+        if hasEnded:
+            showAllBombs(win, matrix, plates, w)
+            
+        isPlaying = checkClick(win, clickPos, width, height)
+        
+        if isPlaying:
+            matrix = []
+            initBoard(matrix, w, h)
+            addBombs(matrix, bombs, w, h)
+            
         game.display.update()
     #game.display.quit()
 
 ##  All methods below this  ##
+
+def checkClick(win, clickPos, width, height):
+    if clickPos[0] >= width/2-12 and clickPos[0] <= width/2+12 and clickPos[1] >= 15 and clickPos[1] <= 40:
+        return True
+    else:
+        return False
 
 def clearScreen(win):
     win.fill(game.Color("black"))
@@ -228,8 +249,8 @@ def drawGameBorders(win, w, h):
     greyF2 = game.draw.rect(win, (128, 128, 128), (9, 10, 4+w*16, 1), 0)
     greyF3 = game.draw.rect(win, (128, 128, 128), (9, 9, 1, 36), 0)
     greyF4 = game.draw.rect(win, (128, 128, 128), (10, 9, 1, 35), 0)
-    
-def drawPressedFace(win, w, h):
+
+def drawPressedFace(win, width, height):
     pic = "../Resources/pressed.gif"
     img = game.image.load(pic)
     win.blit(img, (width/2-12, 15))
